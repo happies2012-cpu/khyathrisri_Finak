@@ -17,11 +17,11 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { label: 'Hosting', hasDropdown: true },
-    { label: 'Domains', hasDropdown: true },
-    { label: 'Website Builder', hasDropdown: false },
-    { label: 'VPS', hasDropdown: false },
-    { label: 'Email', hasDropdown: false },
+    { label: 'Hosting', hasDropdown: true, href: '#' },
+    { label: 'WordPress', hasDropdown: false, href: '/wordpress' },
+    { label: 'Cloud', hasDropdown: false, href: '/cloud' },
+    { label: 'VPS', hasDropdown: false, href: '/vps' },
+    { label: 'Domains', hasDropdown: false, href: '/domains' },
   ];
 
   return (
@@ -50,13 +50,14 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
             {navLinks.map((link) => (
-              <button
+              <Link
                 key={link.label}
+                to={link.href}
                 className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-muted/50"
               >
                 {link.label}
                 {link.hasDropdown && <ChevronDown className="h-4 w-4" />}
-              </button>
+              </Link>
             ))}
           </div>
 
@@ -94,13 +95,15 @@ const Navbar = () => {
           <div className="container mx-auto px-4 py-4">
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => (
-                <button
+                <Link
                   key={link.label}
+                  to={link.href}
                   className="flex items-center justify-between px-4 py-3 text-foreground hover:bg-muted rounded-lg transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {link.label}
                   {link.hasDropdown && <ChevronDown className="h-4 w-4" />}
-                </button>
+                </Link>
               ))}
               <hr className="my-2 border-border" />
               <Button variant="ghost" className="justify-start">
