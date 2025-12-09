@@ -41,3 +41,39 @@ export interface FormData {
   attachments?: File[];
   richContent?: string;
 }
+
+export interface DashboardMetrics {
+  totalRevenue: number;
+  activeSubscriptions: number;
+  totalDomains: number;
+  supportTickets: number;
+  pendingTickets: number;
+  revenueGrowth: number;
+  subscriptionChurn: number;
+}
+
+export interface SessionInfo {
+  id: string;
+  user_id: string;
+  device_type: 'mobile' | 'tablet' | 'desktop';
+  browser: string;
+  os: string;
+  ip_address: string;
+  user_agent: string;
+  last_activity: Date;
+  created_at: Date;
+  is_active: boolean;
+}
+
+export interface DNSRecord {
+  id: string;
+  domain_name: string;
+  type: 'A' | 'AAAA' | 'CNAME' | 'MX' | 'TXT' | 'NS' | 'SRV';
+  name: string;
+  value: string;
+  ttl: number;
+  priority: number | null;
+  status: 'active' | 'pending' | 'failed';
+  created_at: Date;
+  updated_at: Date;
+}

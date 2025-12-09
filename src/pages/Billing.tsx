@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
 import {
   Check,
   Zap,
@@ -18,7 +19,10 @@ import {
   ArrowRight,
   Crown,
   Rocket,
+  Loader2,
 } from 'lucide-react';
+import { getSubscription, getInvoices, createCheckoutSession, createBillingPortalSession } from '@/services/paymentService';
+import type { Subscription, Invoice } from '@/services/paymentService';
 
 const plans = [
   {
@@ -96,15 +100,82 @@ const invoices = [
 ];
 
 export default function Billing() {
-  const { profile } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [invoiceList, setInvoiceList] = useState<Invoice[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
-  const currentPlan = profile?.subscription_plan || 'free';
+  useEffect(() => {
+    if (user) {
+      loadBillingData();
+    }
+  }, [user]);
 
-  const handleUpgrade = (planName: string) => {
-    setSelectedPlan(planName);
-    toast.info(`To upgrade to ${planName}, please contact our sales team or use the checkout button.`);
+  const loadBillingData = async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const [subRes, invoiceRes] = await Promise.all([
+        getSubscription(user.id),
+        getInvoices(user.id),
+      ]);
+
+      if (subRes.data) {
+        setSubscription(subRes.data);
+      }
+      if (invoiceRes.data) {
+        setInvoiceList(invoiceRes.data);
+      }
+    } catch (error) {
+      toast.error('Failed to load billing information');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleUpgrade = async (planName: 'starter' | 'business' | 'enterprise') => {
+    if (!user) {
+      toast.error('You must be logged in to upgrade');
+      return;
+    }
+
+    setIsUpgrading(true);
+    try {
+      const { error, data } = await createCheckoutSession(user.id, planName);
+      if (error) {
+        toast.error('Failed to start checkout');
+        return;
+      }
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      toast.error('An error occurred');
+    } finally {
+      setIsUpgrading(false);
+    }
+  };
+
+  const handleManageBilling = async () => {
+    if (!user) {
+      toast.error('You must be logged in');
+      return;
+    }
+
+    try {
+      const { error, data } = await createBillingPortalSession(user.id);
+      if (error || !data?.url) {
+        toast.error('Failed to access billing portal');
+        return;
+      }
+      window.location.href = data.url;
+    } catch (error) {
+      toast.error('An error occurred');
+    }
+  };
+
+  const currentPlan = subscription?.plan_name || 'free';
 
   return (
     <DashboardLayout>
@@ -127,17 +198,20 @@ export default function Billing() {
                 <div>
                   <p className="text-sm text-muted-foreground">Current Plan</p>
                   <p className="text-2xl font-bold capitalize">{currentPlan}</p>
+                  {subscription && subscription.cancel_at_period_end && (
+                    <p className="text-xs text-destructive mt-1">Canceling on {format(subscription.current_period_end, 'MMM d, yyyy')}</p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-sm text-muted-foreground">Next billing date</p>
-                  <p className="font-medium">January 1, 2025</p>
+                  <p className="font-medium">
+                    {subscription ? format(subscription.current_period_end, 'MMMM d, yyyy') : 'N/A'}
+                  </p>
                 </div>
-                <Button variant="outline" asChild>
-                  <a href="#plans">
-                    Upgrade <ArrowRight className="h-4 w-4 ml-2" />
-                  </a>
+                <Button variant="outline" onClick={handleManageBilling}>
+                  Manage <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               </div>
             </div>
@@ -188,9 +262,17 @@ export default function Billing() {
                   <Button
                     className={`w-full ${plan.popular ? 'btn-rocket' : ''}`}
                     variant={plan.popular ? 'default' : 'outline'}
-                    disabled={currentPlan === plan.name.toLowerCase()}
-                    onClick={() => handleUpgrade(plan.name)}
+                    disabled={currentPlan === plan.name.toLowerCase() || isUpgrading}
+                    onClick={() => {
+                      if (plan.price === 0) {
+                        // Free plan - just show a message
+                        toast.info('You are on the free plan');
+                      } else {
+                        handleUpgrade(plan.name.toLowerCase() as 'starter' | 'business' | 'enterprise');
+                      }
+                    }}
                   >
+                    {isUpgrading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     {currentPlan === plan.name.toLowerCase()
                       ? 'Current Plan'
                       : plan.price === 0
@@ -219,11 +301,10 @@ export default function Billing() {
                   <CreditCard className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="font-medium">No payment method</p>
-                  <p className="text-sm text-muted-foreground">Add a card to upgrade your plan</p>
+                  <p className="font-medium">Payment info managed via Stripe</p>
+                  <p className="text-sm text-muted-foreground">Click "Manage" above to update payment method</p>
                 </div>
               </div>
-              <Button variant="outline">Add Card</Button>
             </div>
           </CardContent>
         </Card>
@@ -238,13 +319,17 @@ export default function Billing() {
             <CardDescription>View and download your invoices</CardDescription>
           </CardHeader>
           <CardContent>
-            {invoices.length === 0 ? (
+            {isLoading ? (
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : invoiceList.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 No invoices yet
               </p>
             ) : (
               <div className="space-y-4">
-                {invoices.map((invoice) => (
+                {invoiceList.map((invoice) => (
                   <div
                     key={invoice.id}
                     className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
@@ -253,17 +338,21 @@ export default function Billing() {
                       <Receipt className="h-5 w-5 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{invoice.id}</p>
-                        <p className="text-sm text-muted-foreground">{invoice.date}</p>
+                        <p className="text-sm text-muted-foreground">{format(invoice.created_at, 'MMM d, yyyy')}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="font-medium">${invoice.amount}</span>
-                      <Badge variant="outline" className="text-success border-success">
-                        {invoice.status}
+                      <span className="font-medium">${(invoice.amount / 100).toFixed(2)}</span>
+                      <Badge variant="outline" className={invoice.status === 'paid' ? 'text-success border-success' : 'text-destructive border-destructive'}>
+                        {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                       </Badge>
-                      <Button variant="ghost" size="sm">
-                        Download
-                      </Button>
+                      {invoice.invoice_pdf && (
+                        <Button variant="ghost" size="sm" asChild>
+                          <a href={invoice.invoice_pdf} target="_blank" rel="noopener noreferrer">
+                            Download
+                          </a>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

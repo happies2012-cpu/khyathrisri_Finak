@@ -3,6 +3,8 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { trackNewSession, cleanupOldSessions } from '@/services/sessionService';
+import { sendWelcomeEmail, sendVerificationEmail } from '@/services/emailService';
 
 interface Profile {
   id: string;
@@ -56,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (error) {
-      console.error('Error fetching profile:', error);
       return null;
     }
     return data as Profile;
@@ -98,18 +99,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error(error.message);
       return { error };
     }
+    
+    // Track new session
+    if (data.user) {
+      try {
+        await trackNewSession(data.user.id, navigator.userAgent);
+      } catch (sessionError) {
+        console.warn('Failed to track session:', sessionError);
+        // Don't fail login if session tracking fails
+      }
+    }
+    
     toast.success('Welcome back!');
     return { error: null };
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -125,7 +137,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       return { error };
     }
-    toast.success('Account created successfully!');
+    
+    // Track new session
+    if (data.user) {
+      try {
+        await trackNewSession(data.user.id, navigator.userAgent);
+      } catch (sessionError) {
+        console.warn('Failed to track session:', sessionError);
+      }
+      
+      // Send welcome email
+      try {
+        await sendWelcomeEmail(email, fullName || 'User');
+      } catch (emailError) {
+        console.warn('Failed to send welcome email:', emailError);
+      }
+    }
+    
+    toast.success('Account created successfully! Check your email to verify.');
     return { error: null };
   };
 

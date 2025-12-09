@@ -74,7 +74,6 @@ export default function Profile() {
       toast.success('Avatar updated!');
     } catch (error: any) {
       toast.error('Failed to upload avatar');
-      console.error(error);
     } finally {
       setUploading(false);
     }

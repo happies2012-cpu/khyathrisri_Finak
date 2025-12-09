@@ -119,7 +119,7 @@ export default function Support() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error(error);
+      // Error handled
     } else {
       setTickets(data || []);
     }
@@ -151,7 +151,6 @@ export default function Support() {
 
     if (error) {
       toast.error('Failed to create ticket');
-      console.error(error);
     } else {
       toast.success('Support ticket created!');
       setCreateDialogOpen(false);

@@ -111,7 +111,6 @@ export default function HostingAccounts() {
 
     if (error) {
       toast.error('Failed to load hosting accounts');
-      console.error(error);
     } else {
       setAccounts(data || []);
     }
@@ -137,7 +136,6 @@ export default function HostingAccounts() {
 
     if (error) {
       toast.error('Failed to create hosting account');
-      console.error(error);
     } else {
       toast.success('Hosting account created!');
       setCreateDialogOpen(false);

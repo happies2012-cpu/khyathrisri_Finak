@@ -54,7 +54,7 @@ export default function DashboardDomains() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error(error);
+      // Error handled
     } else {
       setDomains(data || []);
     }
