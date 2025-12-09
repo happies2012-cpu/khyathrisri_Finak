@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -78,6 +79,15 @@ export default function HostingAccounts() {
   const [newAccountLocation, setNewAccountLocation] = useState('us-east');
   const [creating, setCreating] = useState(false);
 
+  const accountSchema = z.object({
+    name: z
+      .string()
+      .min(3, 'Account name must be at least 3 characters')
+      .max(50, 'Account name cannot exceed 50 characters')
+      .regex(/^[a-zA-Z0-9\- ]+$/, 'Account name may only contain letters, numbers, spaces and hyphens'),
+    server_location: z.enum(['us-east', 'us-west', 'eu-west', 'ap-south']),
+  });
+
   useEffect(() => {
     fetchAccounts();
   }, []);
@@ -98,13 +108,20 @@ export default function HostingAccounts() {
   };
 
   const createAccount = async () => {
-    if (!user || !newAccountName.trim()) return;
+    if (!user) return;
+
+    const parsed = accountSchema.safeParse({ name: newAccountName.trim(), server_location: newAccountLocation });
+    if (!parsed.success) {
+      const errors = parsed.error.errors.map((e) => e.message).join(', ');
+      toast.error(`Validation error: ${errors}`);
+      return;
+    }
 
     setCreating(true);
     const { error } = await supabase.from('hosting_accounts').insert({
       owner_id: user.id,
-      name: newAccountName.trim(),
-      server_location: newAccountLocation,
+      name: parsed.data.name,
+      server_location: parsed.data.server_location,
     });
 
     if (error) {

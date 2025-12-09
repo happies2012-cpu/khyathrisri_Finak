@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,6 +73,12 @@ export default function Support() {
     priority: 'medium',
   });
 
+  const ticketSchema = z.object({
+    subject: z.string().min(5, 'Subject must be at least 5 characters').max(120, 'Subject must be 120 characters or less'),
+    description: z.string().max(2000, 'Description must be 2000 characters or less').nullable().optional(),
+    priority: z.enum(['low', 'medium', 'high', 'urgent']),
+  });
+
   useEffect(() => {
     fetchTickets();
 
@@ -105,14 +112,26 @@ export default function Support() {
   };
 
   const createTicket = async () => {
-    if (!user || !newTicket.subject.trim()) return;
+    if (!user) return;
+
+    const parsed = ticketSchema.safeParse({
+      subject: newTicket.subject.trim(),
+      description: newTicket.description?.trim() || null,
+      priority: newTicket.priority,
+    });
+
+    if (!parsed.success) {
+      const errors = parsed.error.errors.map((e) => e.message).join(', ');
+      toast.error(`Validation error: ${errors}`);
+      return;
+    }
 
     setCreating(true);
     const { error } = await supabase.from('support_tickets').insert({
       user_id: user.id,
-      subject: newTicket.subject.trim(),
-      description: newTicket.description.trim() || null,
-      priority: newTicket.priority,
+      subject: parsed.data.subject,
+      description: parsed.data.description,
+      priority: parsed.data.priority,
     });
 
     if (error) {
@@ -156,6 +175,7 @@ export default function Support() {
                     placeholder="Brief description of your issue"
                     value={newTicket.subject}
                     onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
+                    maxLength={120}
                   />
                 </div>
                 <div className="space-y-2">
@@ -183,6 +203,7 @@ export default function Support() {
                     rows={4}
                     value={newTicket.description}
                     onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                    maxLength={2000}
                   />
                 </div>
               </div>
@@ -190,7 +211,7 @@ export default function Support() {
                 <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={createTicket} disabled={creating || !newTicket.subject.trim()}>
+                <Button onClick={createTicket} disabled={creating || newTicket.subject.trim().length < 5}>
                   <Send className="h-4 w-4 mr-2" />
                   Submit Ticket
                 </Button>

@@ -213,7 +213,13 @@ CREATE POLICY "Owners can manage members" ON public.hosting_account_members FOR 
 );
 
 -- Invitations policies
-CREATE POLICY "Users can view invitations to their email" ON public.invitations FOR SELECT USING (true);
+CREATE POLICY "Users can view invitations to their email" ON public.invitations FOR SELECT USING (
+  auth.email() = email
+  OR auth.uid() = invited_by
+  OR EXISTS (
+    SELECT 1 FROM public.hosting_accounts WHERE id = hosting_account_id AND owner_id = auth.uid()
+  )
+);
 CREATE POLICY "Account owners can create invitations" ON public.invitations FOR INSERT WITH CHECK (
   EXISTS (SELECT 1 FROM public.hosting_accounts WHERE id = hosting_account_id AND owner_id = auth.uid())
 );
