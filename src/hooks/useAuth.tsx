@@ -22,6 +22,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  mfaChallenge: { challengeId: string; factorId: string } | null;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signInWithProvider: (provider: 'google' | 'apple' | 'github') => Promise<{ error: Error | null }>;
@@ -30,8 +31,9 @@ interface AuthContextType {
   refreshProfile: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: Error | null }>;
   updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
-  enrollMFA: () => Promise<{ error: Error | null; data?: { qr_code: string; secret: string } }>;
+  enrollMFA: () => Promise<{ error: Error | null; data?: { factorId: string; qr_code: string; secret: string } }>;
   verifyMFA: (factorId: string, code: string) => Promise<{ error: Error | null }>;
+  verifyMFAChallenge: (challengeId: string, factorId: string, code: string) => Promise<{ error: Error | null }>;
   unenrollMFA: (factorId: string) => Promise<{ error: Error | null }>;
   listSessions: () => Promise<{ error: Error | null; data?: any[] }>;
   revokeSession: (sessionId: string) => Promise<{ error: Error | null }>;
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mfaChallenge, setMfaChallenge] = useState<{ challengeId: string; factorId: string } | null>(null);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -196,7 +199,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.error(error.message);
       return { error };
     }
-    return { error: null, data };
+    return {
+      error: null,
+      data: {
+        factorId: data.id,
+        qr_code: data.totp.qr_code,
+        secret: data.totp.secret
+      }
+    };
   };
 
   const verifyMFA = async (factorId: string, code: string) => {
@@ -213,7 +223,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const unenrollMFA = async (factorId: string) => {
-    const { error } = await supabase.auth.mfa.unenroll(factorId);
+    const { error } = await supabase.auth.mfa.unenroll({ factorId });
     if (error) {
       toast.error(error.message);
       return { error };
@@ -223,22 +233,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const listSessions = async () => {
-    const { data, error } = await supabase.auth.admin.listSessions();
-    if (error) {
-      toast.error(error.message);
-      return { error };
-    }
-    return { error: null, data };
+    // Note: This is a placeholder - Supabase doesn't have admin session management in client SDK
+    // This would need to be implemented via server-side API
+    toast.error('Session management not implemented');
+    return { error: new Error('Not implemented'), data: [] };
   };
 
   const revokeSession = async (sessionId: string) => {
-    const { error } = await supabase.auth.admin.revokeSession(sessionId);
-    if (error) {
-      toast.error(error.message);
-      return { error };
-    }
-    toast.success('Session revoked successfully!');
-    return { error: null };
+    // Note: This is a placeholder - Supabase doesn't have admin session management in client SDK
+    // This would need to be implemented via server-side API
+    toast.error('Session revocation not implemented');
+    return { error: new Error('Not implemented') };
   };
 
   return (

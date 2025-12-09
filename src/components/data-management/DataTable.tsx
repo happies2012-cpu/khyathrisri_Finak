@@ -60,6 +60,8 @@ export const DataTable: React.FC<DataTableProps> = ({
   const [advancedFilters, setAdvancedFilters] = useState<TableFilters>({});
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [expanded, setExpanded] = useState({});
+  const [editingRow, setEditingRow] = useState<string | null>(null);
+  const [editingData, setEditingData] = useState<Partial<DataItem>>({});
 
   const columns = useMemo<ColumnDef<DataItem>[]>(
     () => [
@@ -85,16 +87,41 @@ export const DataTable: React.FC<DataTableProps> = ({
       {
         accessorKey: 'name',
         header: 'Name',
-        cell: ({ row }) => (
-          <div className="font-medium">{row.getValue('name')}</div>
-        ),
+        cell: ({ row }) => {
+          const isEditing = editingRow === row.original.id;
+          const name = row.getValue('name') as string;
+          return isEditing ? (
+            <Input
+              value={editingData.name || name}
+              onChange={(e) => setEditingData(prev => ({ ...prev, name: e.target.value }))}
+              className="w-full"
+            />
+          ) : (
+            <div className="font-medium">{name}</div>
+          );
+        },
       },
       {
         accessorKey: 'status',
         header: 'Status',
         cell: ({ row }) => {
+          const isEditing = editingRow === row.original.id;
           const status = row.getValue('status') as string;
-          return (
+          return isEditing ? (
+            <Select
+              value={editingData.status || status}
+              onValueChange={(value) => setEditingData(prev => ({ ...prev, status: value as any }))}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
             <Badge
               variant={
                 status === 'active'
@@ -157,8 +184,14 @@ export const DataTable: React.FC<DataTableProps> = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => {
+                  setEditingRow(item.id);
+                  setEditingData(item);
+                }}>
+                  Edit Inline
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onEdit?.(item)}>
-                  Edit
+                  Edit in Form
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete?.(item.id)}>
                   Delete
