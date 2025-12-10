@@ -31,9 +31,10 @@ export default function TwoFactorVerify() {
 
   const handleSubmit = async (data: TwoFactorForm) => {
     setIsLoading(true);
-    // In a real implementation, you'd get the factorId from the challenge
-    const factorId = 'factor-id-from-challenge'; // This would come from the MFA challenge
-    const { error } = await verifyMFA(factorId, data.code);
+    // In a real implementation, you'd get the factorId and challengeId from the MFA challenge
+    const factorId = 'factor-id-from-challenge';
+    const challengeId = 'challenge-id-from-challenge';
+    const { error } = await verifyMFA(factorId, challengeId, data.code);
     setIsLoading(false);
 
     if (!error) {

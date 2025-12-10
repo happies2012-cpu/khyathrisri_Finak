@@ -22,6 +22,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Checkbox } from '../ui/checkbox';
 import { Badge } from '../ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ChevronDown, ChevronUp, Eye, EyeOff, Download, MoreHorizontal, Filter } from 'lucide-react';
 import {
   DropdownMenu,

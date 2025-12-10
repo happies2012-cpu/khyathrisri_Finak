@@ -50,7 +50,8 @@ export default function TwoFactorSetup() {
 
   const handleSubmit = async (data: TwoFactorForm) => {
     setIsLoading(true);
-    const { error } = await verifyMFA(mfaData?.secret || '', data.code);
+    // Note: In production, you'd get the challengeId from the MFA challenge flow
+    const { error } = await verifyMFA(mfaData?.secret || '', 'challenge-id', data.code);
     setIsLoading(false);
 
     if (!error) {
