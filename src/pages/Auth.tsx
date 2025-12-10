@@ -37,7 +37,6 @@ export default function Auth() {
   const { signIn, signUp, signInWithProvider, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
 
   const from = (location.state as any)?.from?.pathname || '/dashboard';
 

@@ -243,8 +243,8 @@ export default function Dashboard() {
       if (data && !error) {
         const realActivities: ActivityItem[] = data.map((activity) => ({
           id: activity.id,
-          type: activity.action.split('_')[0], // Extract type from action
-          message: activity.details?.message || activity.action.replace(/_/g, ' '),
+          type: activity.action.split('_')[0],
+          message: (activity.details as Record<string, any>)?.message || activity.action.replace(/_/g, ' '),
           timestamp: new Date(activity.created_at || ''),
           icon: getActivityIcon(activity.action),
         }));

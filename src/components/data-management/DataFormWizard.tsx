@@ -330,7 +330,7 @@ export const DataFormWizard: React.FC<DataFormWizardProps> = ({
             <Checkbox
               id="auto-save"
               checked={autoSaveEnabled}
-              onCheckedChange={setAutoSaveEnabled}
+              onCheckedChange={(checked) => setAutoSaveEnabled(checked === true)}
             />
             <label htmlFor="auto-save" className="text-sm">Auto-save drafts</label>
           </div>

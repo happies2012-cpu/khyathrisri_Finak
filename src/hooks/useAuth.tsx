@@ -1,10 +1,9 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { trackNewSession, cleanupOldSessions } from '@/services/sessionService';
-import { sendWelcomeEmail, sendVerificationEmail } from '@/services/emailService';
+import { trackNewSession } from '@/services/sessionService';
+import { sendWelcomeEmail } from '@/services/emailService';
 
 interface Profile {
   id: string;
@@ -24,19 +23,17 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  mfaChallenge: { challengeId: string; factorId: string } | null;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
-  signInWithProvider: (provider: 'google' | 'apple' | 'github') => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, fullName?: string) => Promise<{ error: AuthError | null }>;
+  signInWithProvider: (provider: 'google' | 'apple' | 'github') => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: Error | null }>;
-  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
-  enrollMFA: () => Promise<{ error: Error | null; data?: { factorId: string; qr_code: string; secret: string } }>;
-  verifyMFA: (factorId: string, code: string) => Promise<{ error: Error | null }>;
-  verifyMFAChallenge: (challengeId: string, factorId: string, code: string) => Promise<{ error: Error | null }>;
-  unenrollMFA: (factorId: string) => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
+  enrollMFA: () => Promise<{ error: AuthError | null; data?: { factorId: string; qr_code: string; secret: string } }>;
+  verifyMFA: (factorId: string, challengeId: string, code: string) => Promise<{ error: AuthError | null }>;
+  unenrollMFA: (factorId: string) => Promise<{ error: AuthError | null }>;
   listSessions: () => Promise<{ error: Error | null; data?: any[] }>;
   revokeSession: (sessionId: string) => Promise<{ error: Error | null }>;
 }
@@ -48,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [mfaChallenge, setMfaChallenge] = useState<{ challengeId: string; factorId: string } | null>(null);
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -111,7 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await trackNewSession(data.user.id, navigator.userAgent);
       } catch (sessionError) {
         console.warn('Failed to track session:', sessionError);
-        // Don't fail login if session tracking fails
       }
     }
     
@@ -154,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     
-    toast.success('Account created successfully! Check your email to verify.');
+    toast.success('Account created successfully!');
     return { error: null };
   };
 
@@ -238,9 +233,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  const verifyMFA = async (factorId: string, code: string) => {
+  const verifyMFA = async (factorId: string, challengeId: string, code: string) => {
     const { error } = await supabase.auth.mfa.verify({
       factorId,
+      challengeId,
       code
     });
     if (error) {
@@ -262,15 +258,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const listSessions = async () => {
-    // Note: This is a placeholder - Supabase doesn't have admin session management in client SDK
-    // This would need to be implemented via server-side API
     toast.error('Session management not implemented');
     return { error: new Error('Not implemented'), data: [] };
   };
 
   const revokeSession = async (sessionId: string) => {
-    // Note: This is a placeholder - Supabase doesn't have admin session management in client SDK
-    // This would need to be implemented via server-side API
     toast.error('Session revocation not implemented');
     return { error: new Error('Not implemented') };
   };

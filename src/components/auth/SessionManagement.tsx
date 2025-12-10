@@ -4,26 +4,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Monitor, Smartphone, Tablet, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useRealtimeSessions } from '@/hooks/useRealtimeSessions';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { revokeSession, SessionInfo } from '@/services/sessionService';
+import { revokeSession, listUserSessions, SessionInfo } from '@/services/sessionService';
 
 export default function SessionManagement() {
   const { user } = useAuth();
-  const { sessions: sessionsList, isLoading, error } = useRealtimeSessions(user?.id);
   const [sessions, setSessions] = useState<(SessionInfo & { current?: boolean })[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (sessionsList && sessionsList.length > 0) {
-      // Mark current browser session
-      const sessionWithCurrent = sessionsList.map((session, index) => ({
-        ...session,
-        current: index === 0 // Most recent is current
-      }));
-      setSessions(sessionWithCurrent);
+    async function fetchSessions() {
+      if (!user?.id) return;
+      
+      setIsLoading(true);
+      try {
+        const sessionsList = await listUserSessions(user.id);
+        const sessionWithCurrent = sessionsList.map((session, index) => ({
+          ...session,
+          current: index === 0
+        }));
+        setSessions(sessionWithCurrent);
+      } catch (err) {
+        setError('Failed to load sessions');
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [sessionsList]);
+
+    fetchSessions();
+  }, [user?.id]);
 
   const handleRevokeSession = async (sessionId: string) => {
     try {
@@ -66,16 +77,12 @@ export default function SessionManagement() {
 
       <CardContent className="space-y-4">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
             {error}
           </div>
         )}
 
-        {isLoading ? (
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : sessions.length === 0 ? (
+        {sessions.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No active sessions found.
           </p>
@@ -86,7 +93,7 @@ export default function SessionManagement() {
               className="flex items-center justify-between p-4 border rounded-lg"
             >
               <div className="flex items-center gap-3">
-                {getDeviceIcon(session.device_type)}
+                {getDeviceIcon(session.deviceType)}
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
@@ -97,10 +104,10 @@ export default function SessionManagement() {
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {session.ip_address} • {format(session.created_at, 'MMM d, yyyy h:mm a')}
+                    {session.ipAddress} • {format(session.createdAt, 'MMM d, yyyy h:mm a')}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    Last activity: {format(session.last_activity, 'MMM d, yyyy h:mm a')}
+                    Last activity: {format(session.lastActivity, 'MMM d, yyyy h:mm a')}
                   </div>
                 </div>
               </div>

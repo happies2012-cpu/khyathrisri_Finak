@@ -1,4 +1,4 @@
-import { DataItem } from '../types/data';
+import { DataItem } from '../../types/data';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
