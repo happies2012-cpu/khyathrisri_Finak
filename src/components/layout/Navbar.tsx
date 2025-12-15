@@ -39,7 +39,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img src={ksLogo} alt="Key Secure Foundation" className="h-16 w-26 object-contain" />
+            <img src={ksLogo} alt="Key Secure Foundation" className="h-20 w-26 object-contain" />
             <span className="text-xl lg:text-2xl font-bold hidden sm:block">
               <span className="gradient-text-orange">​</span>
               <span className="text-foreground"></span>
