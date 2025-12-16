@@ -21,7 +21,7 @@ import {
   IndianRupee,
   DollarSign,
 } from 'lucide-react';
-import { getSubscription, getInvoices, createCheckoutSession, createBillingPortalSession } from '@/services/paymentService';
+import { getSubscription, getInvoices, createBillingPortalSession } from '@/services/paymentService';
 import { addToCart } from '@/services/cartService';
 import { useNavigate } from 'react-router-dom';
 import type { Subscription, Invoice } from '@/services/paymentService';
@@ -158,7 +158,6 @@ export default function Billing() {
       return;
     }
 
-<<<<<<< HEAD
     if (plan.planId === 'free') {
       toast.info('You are already on the free plan');
       return;
@@ -171,15 +170,6 @@ export default function Billing() {
       navigate('/cart');
     } catch (e) {
       toast.error('Failed to add to cart');
-    }
-    // Instead of direct checkout, add to cart so users can purchase multiple items
-    try {
-      await addToCart(user.id, `${planName.toLowerCase()}-monthly`);
-      toast.success(`${planName} added to cart`);
-      navigate('/cart');
-    } catch (e) {
-      toast.error('Failed to add to cart');
->>>>>>> 12adb94 (KSF branding: replace Lovable assets; add KSF favicon/README; scaffold AI agents/chat and Google OAuth UI layout)
     }
   };
 
@@ -410,22 +400,6 @@ export default function Billing() {
           </CardContent>
         </Card>
       </div>
-
-      {/* PayU Checkout Modal */}
-      {selectedPlan && (
-        <PayUCheckout
-          isOpen={showPayUCheckout}
-          onClose={() => {
-            setShowPayUCheckout(false);
-            setSelectedPlan(null);
-          }}
-          plan={{
-            name: selectedPlan.name,
-            price: currency === 'INR' ? selectedPlan.priceINR : selectedPlan.priceUSD,
-            planId: selectedPlan.planId as 'starter' | 'business' | 'enterprise',
-          }}
-        />
-      )}
     </DashboardLayout>
   );
 }

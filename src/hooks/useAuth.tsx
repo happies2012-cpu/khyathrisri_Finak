@@ -54,6 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .single();
 
     if (error) {
+      // If Supabase isn't configured or table missing, fall back to demo profile in localStorage
+      try {
+        const raw = localStorage.getItem('ksf_mock_profile');
+        if (raw) {
+          const p = JSON.parse(raw) as Profile;
+          if (p.id === userId) return p;
+        }
+      } catch (e) {
+        // ignore
+      }
       return null;
     }
     return data as Profile;
@@ -178,6 +188,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithProvider = async (provider: 'google' | 'apple' | 'github') => {
+    // Demo/mock mode for OAuth (no external keys needed)
+    if (import.meta.env.VITE_AUTH_MOCK === 'true') {
+      const fakeUser = { id: `mock-${provider}-${Date.now()}`, email: `${provider}@example.com` } as unknown as User;
+      setUser(fakeUser);
+      const fakeSession = { user: fakeUser } as unknown as Session;
+      setSession(fakeSession);
+      const fakeProfile: Profile = {
+        id: fakeUser.id,
+        email: fakeUser.email,
+        full_name: `${provider} Demo`,
+        avatar_url: null,
+        bio: null,
+        phone: null,
+        company: 'KSF (demo)',
+        website: null,
+        subscription_plan: 'free',
+        created_at: new Date().toISOString(),
+      };
+      setProfile(fakeProfile);
+      try {
+        await trackNewSession(fakeUser.id, navigator.userAgent);
+      } catch (e) {
+        console.warn('Failed to track mock session', e);
+      }
+      localStorage.setItem('ksf_mock_profile', JSON.stringify(fakeProfile));
+      toast.success(`Signed in with ${provider} (demo)`);
+      return { error: null };
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {

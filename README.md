@@ -41,7 +41,14 @@ If you prefer, I can prepare the commit locally and show the exact `git` command
 
 Notes and next steps
 
-- Google OAuth: scaffolded placeholders exist; you'll need client IDs for production and a server-side callback for secure sessions.
+- Google OAuth: scaffolded placeholders exist; you'll need client IDs for production and a server-side callback for secure sessions. For local/demo testing you can enable mock OAuth by creating a `.env` file with:
+
+```env
+VITE_AUTH_MOCK=true
+```
+
+When `VITE_AUTH_MOCK` is set, the "Continue with Google" (and other social) buttons will create a demo user locally so you can test flows without external credentials.
+
 - Chatbot: UI scaffold added; current integration uses a mock ChatGPT adapter. Replace with your OpenAI API key or a hosted inference endpoint.
 - Payments: mock provider enabled by default. For real gateways (Stripe, Razorpay, PayU), add server-side endpoints and webhooks.
 - Production hardening: environment secret management, database migrations, monitoring, and CI/CD pipeline are required before public deployment.
