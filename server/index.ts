@@ -13,6 +13,7 @@ import orderRoutes from './routes/orders';
 import billingRoutes from './routes/billing';
 import supportRoutes from './routes/support';
 import adminRoutes from './routes/admin';
+import aiRoutes from './routes/ai';
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
 
@@ -89,6 +90,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Error handling
 app.use(errorHandler);
