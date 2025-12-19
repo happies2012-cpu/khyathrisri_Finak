@@ -77,4 +77,38 @@ router.post('/local/chat', authenticate, [
     }
 }));
 
+// Knowledge Base (RAG) - Train/Add
+router.post('/knowledge/add', authenticate, [
+    body('content').notEmpty().isString(),
+    body('title').optional().isString(),
+    body('tags').optional().isArray(),
+], handleValidationErrors, asyncHandler(async (req: AuthRequest, res: any) => {
+    const { content, title, tags } = req.body;
+    // If user is admin, allow adding global knowledge (userId: null) if specified? 
+    // For now, let's just associate with user for personalization or standard user uploads.
+    try {
+        // Import lazily or at top. I'll need to add import.
+        const doc = await import('../services/ai/knowledgeBase').then(m => m.knowledgeBaseService.addDocument(content, title, req.user!.id, tags));
+        logger.info('Knowledge document added', { userId: req.user!.id, docId: doc.id });
+        res.json({ success: true, data: doc });
+    } catch (error: any) {
+        throw new CustomError(error.message || 'Error adding document', 500);
+    }
+}));
+
+// Knowledge Base (RAG) - Search/Query
+router.post('/knowledge/search', authenticate, [
+    body('query').notEmpty().isString(),
+    body('limit').optional().isInt(),
+], handleValidationErrors, asyncHandler(async (req: AuthRequest, res: any) => {
+    const { query, limit } = req.body;
+    try {
+        const results = await import('../services/ai/knowledgeBase').then(m => m.knowledgeBaseService.search(query, limit || 5, req.user!.id));
+        logger.info('Knowledge base searched', { userId: req.user!.id, query });
+        res.json({ success: true, data: results });
+    } catch (error: any) {
+        throw new CustomError(error.message || 'Error searching knowledge base', 500);
+    }
+}));
+
 export default router;

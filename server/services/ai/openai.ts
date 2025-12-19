@@ -48,6 +48,23 @@ export class OpenAIService {
             throw error;
         }
     }
+
+    async generateEmbedding(text: string) {
+        if (!this.client) {
+            throw new Error('OpenAI client not initialized');
+        }
+
+        try {
+            const response = await this.client.embeddings.create({
+                model: "text-embedding-3-small",
+                input: text,
+            });
+            return response.data[0].embedding;
+        } catch (error) {
+            logger.error('OpenAI generateEmbedding error:', error);
+            throw error;
+        }
+    }
 }
 
 export const openAIService = new OpenAIService();
