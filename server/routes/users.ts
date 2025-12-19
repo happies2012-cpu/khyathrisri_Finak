@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -231,8 +231,8 @@ router.put('/:id', authenticate, authorize('ADMIN', 'SUPER_ADMIN'), [
     }
   });
 
-  logger.info('User updated by admin', { 
-    targetUserId: id, 
+  logger.info('User updated by admin', {
+    targetUserId: id,
     adminId: req.user!.id,
     changes: { firstName, lastName, username, phone, role, status }
   });
@@ -260,8 +260,8 @@ router.delete('/:id', authenticate, authorize('SUPER_ADMIN'), asyncHandler(async
   // Delete user (cascade will handle related records)
   await prisma.user.delete({ where: { id } });
 
-  logger.warn('User deleted by super admin', { 
-    targetUserId: id, 
+  logger.warn('User deleted by super admin', {
+    targetUserId: id,
     adminId: req.user!.id,
     targetUserEmail: user.email
   });

@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -85,7 +85,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: any)
   const { id } = req.params;
 
   const account = await prisma.hostingAccount.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -159,11 +159,11 @@ router.post('/', authenticate, [
     },
   });
 
-  logger.info('Hosting account created', { 
-    accountId: account.id, 
+  logger.info('Hosting account created', {
+    accountId: account.id,
     userId: req.user!.id,
     type,
-    plan 
+    plan
   });
 
   res.status(201).json({
@@ -181,7 +181,7 @@ router.put('/:id', authenticate, [
   const { name, status } = req.body;
 
   const account = await prisma.hostingAccount.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -217,8 +217,8 @@ router.put('/:id', authenticate, [
     },
   });
 
-  logger.info('Hosting account updated', { 
-    accountId: id, 
+  logger.info('Hosting account updated', {
+    accountId: id,
     userId: req.user!.id,
     changes: { name, status }
   });
@@ -234,7 +234,7 @@ router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: a
   const { id } = req.params;
 
   const account = await prisma.hostingAccount.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -274,8 +274,8 @@ router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: a
     },
   });
 
-  logger.warn('Hosting account deleted', { 
-    accountId: id, 
+  logger.warn('Hosting account deleted', {
+    accountId: id,
     userId: req.user!.id,
     accountName: account.name
   });
@@ -296,8 +296,8 @@ router.get('/stats/overview', authenticate, asyncHandler(async (req: AuthRequest
     totalMonthlyCost,
   ] = await Promise.all([
     prisma.hostingAccount.count({ where: { userId: req.user!.id } }),
-    prisma.hostingAccount.count({ 
-      where: { 
+    prisma.hostingAccount.count({
+      where: {
         userId: req.user!.id,
         status: 'ACTIVE',
       },

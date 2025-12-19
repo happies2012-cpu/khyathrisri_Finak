@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -76,7 +76,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: any)
   const { id } = req.params;
 
   const order = await prisma.order.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -167,11 +167,11 @@ router.post('/', authenticate, [
     },
   });
 
-  logger.info('Order created', { 
-    orderId: order.id, 
+  logger.info('Order created', {
+    orderId: order.id,
     userId: req.user!.id,
     orderNumber,
-    totalAmount 
+    totalAmount
   });
 
   res.status(201).json({
@@ -189,7 +189,7 @@ router.put('/:id/status', authenticate, [
   const { status, notes } = req.body;
 
   const order = await prisma.order.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -242,11 +242,11 @@ router.put('/:id/status', authenticate, [
     },
   });
 
-  logger.info('Order status updated', { 
-    orderId: id, 
+  logger.info('Order status updated', {
+    orderId: id,
     userId: req.user!.id,
     oldStatus: order.status,
-    newStatus: status 
+    newStatus: status
   });
 
   res.json({
@@ -263,7 +263,7 @@ router.post('/:id/cancel', authenticate, [
   const { reason } = req.body;
 
   const order = await prisma.order.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -303,10 +303,10 @@ router.post('/:id/cancel', authenticate, [
     },
   });
 
-  logger.info('Order cancelled', { 
-    orderId: id, 
+  logger.info('Order cancelled', {
+    orderId: id,
     userId: req.user!.id,
-    reason 
+    reason
   });
 
   res.json({
@@ -326,14 +326,14 @@ router.get('/stats/overview', authenticate, asyncHandler(async (req: AuthRequest
     recentOrders,
   ] = await Promise.all([
     prisma.order.count({ where: { userId: req.user!.id } }),
-    prisma.order.count({ 
-      where: { 
+    prisma.order.count({
+      where: {
         userId: req.user!.id,
         status: 'COMPLETED',
       },
     }),
-    prisma.order.count({ 
-      where: { 
+    prisma.order.count({
+      where: {
         userId: req.user!.id,
         status: 'PENDING',
       },

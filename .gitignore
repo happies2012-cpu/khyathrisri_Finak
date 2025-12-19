@@ -32,3 +32,4 @@ dist-ssr
 .qoder/rules/byterover-rules.md
 .augment/rules/byterover-rules.md
 /generated/prisma
+dist-server/

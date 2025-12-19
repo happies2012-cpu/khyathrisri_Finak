@@ -1,14 +1,14 @@
 import { Router } from 'express';
 import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { CustomError } from '../middleware/errorHandler';
 import { generateToken, authenticate, AuthRequest } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -255,7 +255,7 @@ router.put('/password', authenticate, [
 // Logout (client-side token removal, but we can track it)
 router.post('/logout', authenticate, asyncHandler(async (req: AuthRequest, res: any) => {
   logger.info('User logged out', { userId: req.user!.id });
-  
+
   res.json({
     success: true,
     message: 'Logged out successfully',

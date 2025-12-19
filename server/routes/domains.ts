@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -79,7 +79,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: any)
   const { id } = req.params;
 
   const domain = await prisma.domain.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -175,10 +175,10 @@ router.post('/', authenticate, [
     },
   });
 
-  logger.info('Domain registered', { 
-    domainId: domain.id, 
+  logger.info('Domain registered', {
+    domainId: domain.id,
     userId: req.user!.id,
-    name 
+    name
   });
 
   res.status(201).json({
@@ -197,7 +197,7 @@ router.put('/:id', authenticate, [
   const { autoRenew, nameservers, status } = req.body;
 
   const domain = await prisma.domain.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -234,8 +234,8 @@ router.put('/:id', authenticate, [
     },
   });
 
-  logger.info('Domain updated', { 
-    domainId: id, 
+  logger.info('Domain updated', {
+    domainId: id,
     userId: req.user!.id,
     changes: { autoRenew, nameservers, status }
   });
@@ -254,7 +254,7 @@ router.post('/:id/transfer', authenticate, [
   const { newHostingAccountId } = req.body;
 
   const domain = await prisma.domain.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -304,10 +304,10 @@ router.post('/:id/transfer', authenticate, [
     },
   });
 
-  logger.info('Domain transfer initiated', { 
-    domainId: id, 
+  logger.info('Domain transfer initiated', {
+    domainId: id,
     userId: req.user!.id,
-    newHostingAccountId 
+    newHostingAccountId
   });
 
   res.json({
@@ -321,7 +321,7 @@ router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: a
   const { id } = req.params;
 
   const domain = await prisma.domain.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -359,8 +359,8 @@ router.delete('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: a
     },
   });
 
-  logger.warn('Domain deleted', { 
-    domainId: id, 
+  logger.warn('Domain deleted', {
+    domainId: id,
     userId: req.user!.id,
     domainName: domain.name
   });
@@ -381,8 +381,8 @@ router.get('/stats/overview', authenticate, asyncHandler(async (req: AuthRequest
     totalYearlyCost,
   ] = await Promise.all([
     prisma.domain.count({ where: { userId: req.user!.id } }),
-    prisma.domain.count({ 
-      where: { 
+    prisma.domain.count({
+      where: {
         userId: req.user!.id,
         status: 'ACTIVE',
       },

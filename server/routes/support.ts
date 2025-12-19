@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -90,7 +90,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: any)
   const { id } = req.params;
 
   const ticket = await prisma.supportTicket.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -177,11 +177,11 @@ router.post('/', authenticate, [
     },
   });
 
-  logger.info('Support ticket created', { 
-    ticketId: ticket.id, 
+  logger.info('Support ticket created', {
+    ticketId: ticket.id,
     userId: req.user!.id,
     subject,
-    priority 
+    priority
   });
 
   res.status(201).json({
@@ -198,7 +198,7 @@ router.post('/:id/replies', authenticate, [
   const { content } = req.body;
 
   const ticket = await prisma.supportTicket.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -255,10 +255,10 @@ router.post('/:id/replies', authenticate, [
     },
   });
 
-  logger.info('Reply added to support ticket', { 
-    ticketId: id, 
+  logger.info('Reply added to support ticket', {
+    ticketId: id,
     userId: req.user!.id,
-    replyId: reply.id 
+    replyId: reply.id
   });
 
   res.status(201).json({
@@ -276,7 +276,7 @@ router.put('/:id', authenticate, [
   const { status, priority } = req.body;
 
   const ticket = await prisma.supportTicket.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -330,8 +330,8 @@ router.put('/:id', authenticate, [
     },
   });
 
-  logger.info('Support ticket updated', { 
-    ticketId: id, 
+  logger.info('Support ticket updated', {
+    ticketId: id,
     userId: req.user!.id,
     changes: { status, priority }
   });
@@ -350,7 +350,7 @@ router.post('/:id/close', authenticate, [
   const { reason } = req.body;
 
   const ticket = await prisma.supportTicket.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -412,10 +412,10 @@ router.post('/:id/close', authenticate, [
     },
   });
 
-  logger.info('Support ticket closed', { 
-    ticketId: id, 
+  logger.info('Support ticket closed', {
+    ticketId: id,
     userId: req.user!.id,
-    reason 
+    reason
   });
 
   res.json({
@@ -435,14 +435,14 @@ router.get('/stats/overview', authenticate, asyncHandler(async (req: AuthRequest
     recentTickets,
   ] = await Promise.all([
     prisma.supportTicket.count({ where: { userId: req.user!.id } }),
-    prisma.supportTicket.count({ 
-      where: { 
+    prisma.supportTicket.count({
+      where: {
         userId: req.user!.id,
         status: { in: ['OPEN', 'IN_PROGRESS'] },
       },
     }),
-    prisma.supportTicket.count({ 
-      where: { 
+    prisma.supportTicket.count({
+      where: {
         userId: req.user!.id,
         status: 'RESOLVED',
       },

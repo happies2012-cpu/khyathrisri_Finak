@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -416,11 +416,11 @@ router.put('/hosting/:id/status', authenticate, authorize('ADMIN', 'SUPER_ADMIN'
     },
   });
 
-  logger.info('Hosting account status updated by admin', { 
-    accountId: id, 
+  logger.info('Hosting account status updated by admin', {
+    accountId: id,
     adminId: req.user!.id,
     oldStatus: account.status,
-    newStatus: status 
+    newStatus: status
   });
 
   res.json({
@@ -490,10 +490,10 @@ router.post('/support/:id/reply', authenticate, authorize('ADMIN', 'SUPER_ADMIN'
     },
   });
 
-  logger.info('Admin replied to support ticket', { 
-    ticketId: id, 
+  logger.info('Admin replied to support ticket', {
+    ticketId: id,
     adminId: req.user!.id,
-    replyId: reply.id 
+    replyId: reply.id
   });
 
   res.status(201).json({
@@ -534,9 +534,9 @@ router.put('/settings', authenticate, authorize('SUPER_ADMIN'), [
     },
   });
 
-  logger.info('System settings updated by super admin', { 
+  logger.info('System settings updated by super admin', {
     adminId: req.user!.id,
-    settingsCount: Object.keys(settings).length 
+    settingsCount: Object.keys(settings).length
   });
 
   res.json({

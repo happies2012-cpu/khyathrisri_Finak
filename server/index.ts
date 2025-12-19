@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -15,7 +17,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
 
 const app = express();
-const prisma = new PrismaClient();
+import { prisma } from './utils/prisma';
 
 // Rate limiting
 const limiter = rateLimit({
@@ -30,13 +32,17 @@ const limiter = rateLimit({
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // More permissive for development
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "http:", "https:"], // Allow both HTTP and HTTPS
+      defaultSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:", "data:"], // Allow blob and data URLs
+      styleSrc: ["'self'", "'unsafe-inline'", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+      imgSrc: ["'self'", "data:", "https:", "http:", "blob:"],
+      connectSrc: ["'self'", "http:", "https:", "ws:", "wss:", "blob:"], // Allow WebSocket and blob
+      frameSrc: ["'self'", "blob:"],
+      workerSrc: ["'self'", "blob:"],
+      childSrc: ["'self'", "blob:"],
     },
   },
+  crossOriginEmbedderPolicy: false, // Disable for development
 }));
 app.use(cors({
   origin: [
@@ -47,12 +53,14 @@ app.use(cors({
     'http://0.0.0.0:5173',
     'https://0.0.0.0:5173',
     // Allow any origin for development
-    ...(process.env.NODE_ENV === 'development' && { origin: true })
+    ...(process.env.NODE_ENV === 'development' ? [true] : [])
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept'],
   exposedHeaders: ['X-Total-Count'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }));
 app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
@@ -86,8 +94,29 @@ app.use('/api/admin', adminRoutes);
 app.use(errorHandler);
 
 // 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// Serve frontend
+app.use(express.static(path.join(path.dirname(fileURLToPath(import.meta.url)), '../dist')));
+
+// SPA fallback for non-API routes
+app.get(/.*/, (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '../dist/index.html'));
+});
+
+// 404 handler for API or if file not found
+app.use((req, res) => {
+  if (req.path.startsWith('/api')) {
+    res.status(404).json({ error: 'Route not found' });
+  } else {
+    // If we got here for a non-api route, likely index.html is missing or something went wrong? 
+    // Or maybe we should just redirect to index.html?
+    // Actually the previous handler catches '*' unless it's api.
+    // So if we reach here, it must be an API route that wasn't handled previously (if next() was called)
+    // OR it fell through.
+    res.status(404).json({ error: 'Route not found' });
+  }
 });
 
 const PORT = process.env.PORT || 3001;

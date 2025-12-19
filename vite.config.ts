@@ -12,11 +12,14 @@ export default defineConfig({
   },
   server: {
     // Enable HTTPS for development to avoid mixed content issues
+    https: true, // Enable HTTPS with self-signed certificate
     host: '0.0.0.0', // Allow external connections
     port: 5173,
     cors: true, // Enable CORS
     strictPort: false, // Allow port to change if occupied
     open: true, // Auto-open browser
+    // Disable host check for development
+    allowedHosts: 'all',
     // Proxy API requests to backend
     proxy: {
       '/api': {

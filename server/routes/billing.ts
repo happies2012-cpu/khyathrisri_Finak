@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../utils/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import { CustomError } from '../middleware/errorHandler';
 import { asyncHandler } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Validation middleware
 const handleValidationErrors = (req: any, res: any, next: any) => {
@@ -73,7 +73,7 @@ router.get('/:id', authenticate, asyncHandler(async (req: AuthRequest, res: any)
   const { id } = req.params;
 
   const invoice = await prisma.invoice.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -167,11 +167,11 @@ router.post('/', authenticate, [
     },
   });
 
-  logger.info('Invoice created', { 
-    invoiceId: invoice.id, 
+  logger.info('Invoice created', {
+    invoiceId: invoice.id,
     userId: req.user!.id,
     invoiceNumber,
-    amount 
+    amount
   });
 
   res.status(201).json({
@@ -190,7 +190,7 @@ router.put('/:id', authenticate, [
   const { status, dueDate, notes } = req.body;
 
   const invoice = await prisma.invoice.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -241,8 +241,8 @@ router.put('/:id', authenticate, [
     },
   });
 
-  logger.info('Invoice updated', { 
-    invoiceId: id, 
+  logger.info('Invoice updated', {
+    invoiceId: id,
     userId: req.user!.id,
     changes: { status, dueDate, notes }
   });
@@ -307,7 +307,7 @@ router.post('/subscriptions', authenticate, [
   // Calculate period dates
   const now = new Date();
   let periodEnd: Date;
-  
+
   switch (billingCycle) {
     case 'MONTHLY':
       periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -354,11 +354,11 @@ router.post('/subscriptions', authenticate, [
     },
   });
 
-  logger.info('Subscription created', { 
-    subscriptionId: subscription.id, 
+  logger.info('Subscription created', {
+    subscriptionId: subscription.id,
     userId: req.user!.id,
     productName,
-    plan 
+    plan
   });
 
   res.status(201).json({
@@ -376,7 +376,7 @@ router.post('/subscriptions/:id/cancel', authenticate, [
   const { reason, cancelAtPeriodEnd = true } = req.body;
 
   const subscription = await prisma.subscription.findFirst({
-    where: { 
+    where: {
       id,
       userId: req.user!.id,
     },
@@ -415,11 +415,11 @@ router.post('/subscriptions/:id/cancel', authenticate, [
     },
   });
 
-  logger.info('Subscription cancelled', { 
-    subscriptionId: id, 
+  logger.info('Subscription cancelled', {
+    subscriptionId: id,
     userId: req.user!.id,
     reason,
-    cancelAtPeriodEnd 
+    cancelAtPeriodEnd
   });
 
   res.json({
@@ -442,14 +442,14 @@ router.get('/stats/overview', authenticate, asyncHandler(async (req: AuthRequest
     monthlySubscriptionCost,
   ] = await Promise.all([
     prisma.invoice.count({ where: { userId: req.user!.id } }),
-    prisma.invoice.count({ 
-      where: { 
+    prisma.invoice.count({
+      where: {
         userId: req.user!.id,
         status: 'PAID',
       },
     }),
-    prisma.invoice.count({ 
-      where: { 
+    prisma.invoice.count({
+      where: {
         userId: req.user!.id,
         status: 'SENT',
       },
