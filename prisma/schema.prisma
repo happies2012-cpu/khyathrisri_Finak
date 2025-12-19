@@ -1,0 +1,392 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String?   @unique
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  phone         String?
+  role          Role      @default(USER)
+  status        UserStatus @default(ACTIVE)
+  emailVerified DateTime? @default(now())
+  lastLoginAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  hostingAccounts HostingAccount[]
+  domains       Domain[]
+  orders        Order[]
+  invoices      Invoice[]
+  supportTickets SupportTicket[]
+  supportReplies SupportReply[]
+  activityLogs  ActivityLog[]
+  cartItems     CartItem[]
+  subscriptions Subscription[]
+  notifications  Notification[]
+  oauthProviders OAuthProvider[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model OAuthProvider {
+  id          String   @id @default(cuid())
+  userId      String
+  provider    String   // google, github, etc.
+  providerId  String   @unique
+  accessToken String?  @db.Text
+  refreshToken String? @db.Text
+  expiresAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("oauth_providers")
+}
+
+model HostingAccount {
+  id          String           @id @default(cuid())
+  userId      String
+  name        String
+  type        HostingType
+  status      HostingStatus    @default(PENDING)
+  domain      String?
+  ipAddress   String?
+  plan        String
+  price       Decimal          @db.Decimal(10, 2)
+  billingCycle BillingCycle    @default(MONTHLY)
+  expiresAt   DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domains Domain[]
+
+  @@map("hosting_accounts")
+}
+
+model Domain {
+  id             String      @id @default(cuid())
+  userId         String
+  hostingAccountId String?
+  name           String      @unique
+  status         DomainStatus @default(PENDING)
+  expiryDate     DateTime?
+  autoRenew      Boolean     @default(false)
+  nameservers    String[]
+  dnsRecords     Json?
+  price          Decimal     @db.Decimal(10, 2)
+  registeredAt   DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hostingAccount HostingAccount? @relation(fields: [hostingAccountId], references: [id])
+
+  @@map("domains")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  orderNumber     String      @unique
+  status          OrderStatus @default(PENDING)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  currency        String      @default("USD")
+  paymentMethod   String?
+  paymentStatus   PaymentStatus @default(PENDING)
+  billingAddress  Json?
+  shippingAddress Json?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id])
+  items      OrderItem[]
+  invoices   Invoice[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(10, 2)
+  totalPrice  Decimal @db.Decimal(10, 2)
+  metadata    Json?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Invoice {
+  id            String         @id @default(cuid())
+  userId        String
+  orderId       String?
+  invoiceNumber String         @unique
+  status        InvoiceStatus  @default(DRAFT)
+  amount        Decimal        @db.Decimal(10, 2)
+  dueDate       DateTime
+  paidAt        DateTime?
+  currency      String         @default("USD")
+  items         Json
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id])
+  order  Order?  @relation(fields: [orderId], references: [id])
+
+  @@map("invoices")
+}
+
+model Subscription {
+  id           String           @id @default(cuid())
+  userId       String
+  productId    String
+  productName  String
+  status       SubscriptionStatus @default(ACTIVE)
+  plan         String
+  price        Decimal          @db.Decimal(10, 2)
+  billingCycle BillingCycle     @default(MONTHLY)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean     @default(false)
+  canceledAt         DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model CartItem {
+  id         String  @id @default(cuid())
+  userId     String
+  productId  String
+  name       String
+  price      Decimal @db.Decimal(10, 2)
+  quantity   Int     @default(1)
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("cart_items")
+}
+
+model SupportTicket {
+  id          String        @id @default(cuid())
+  userId      String
+  subject     String
+  description  String        @db.Text
+  status      TicketStatus  @default(OPEN)
+  priority    Priority      @default(MEDIUM)
+  category    String?
+  assignedTo  String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user     User              @relation(fields: [userId], references: [id])
+  replies  SupportReply[]
+
+  @@map("support_tickets")
+}
+
+model SupportReply {
+  id        String   @id @default(cuid())
+  ticketId  String
+  userId    String
+  content   String   @db.Text
+  isStaff   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("support_replies")
+}
+
+model ActivityLog {
+  id        String       @id @default(cuid())
+  userId    String
+  action    String
+  resource  String?
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String           @db.Text
+  type      NotificationType
+  read      Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model SystemSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum HostingType {
+  VPS
+  SHARED
+  CLOUD
+  WORDPRESS
+  DEDICATED
+}
+
+enum HostingStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum DomainStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  TRANSFER_PENDING
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  SUSPENDED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+  QUARTERLY
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  BILLING
+  SECURITY
+}
