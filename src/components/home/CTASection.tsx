@@ -1,7 +1,18 @@
 import { Button } from '@/components/ui/button';
 import { Rocket, ArrowRight, Shield, Clock, Headphones } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CTASection = () => {
+  const navigate = useNavigate();
+
+  const handleStartTrial = () => {
+    navigate('/auth');
+  };
+
+  const handleContactSales = () => {
+    navigate('/support');
+  };
+
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Background */}
@@ -32,12 +43,12 @@ const CTASection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button variant="rocket" size="xl" className="group text-lg">
+            <Button variant="rocket" size="xl" className="group text-lg" onClick={handleStartTrial}>
               <Rocket className="h-6 w-6 group-hover:animate-rocket-launch" />
               Start Free Trial
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Button>
-            <Button variant="outline" size="xl" className="text-lg">
+            <Button variant="outline" size="xl" className="text-lg" onClick={handleContactSales}>
               Contact Sales
             </Button>
           </div>

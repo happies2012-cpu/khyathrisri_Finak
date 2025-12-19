@@ -11,7 +11,6 @@ import DataCentersSection from '@/components/home/DataCentersSection';
 import SponsorsSection from '@/components/home/SponsorsSection';
 import TrustSection from '@/components/home/TrustSection';
 import CTASection from '@/components/home/CTASection';
-import Footer from '@/components/layout/Footer';
 import LiveChat from '@/components/home/LiveChat';
 
 const Index = () => {
@@ -32,7 +31,6 @@ const Index = () => {
         <TrustSection />
         <CTASection />
       </main>
-      <Footer />
       <LiveChat />
     </div>
   );
