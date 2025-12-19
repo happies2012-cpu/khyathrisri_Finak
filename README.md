@@ -4,59 +4,400 @@
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-# Rocket Launchpad (KSF)
+# KSFOUNDATION - Professional Hosting Platform
 
-Rocket Launchpad is a demo hosting/control-panel platform built with React, TypeScript, Vite, and Tailwind. This repository contains the frontend UI and client-side scaffolding for payments, hosting provisioning, and AI integrations — configured to run locally in demo (mock) mode without any third-party API keys.
+A production-ready hosting platform built with modern web technologies, providing comprehensive domain management, VPS hosting, and cloud services.
 
-Important: This repo intentionally ships with mock providers for payments and AI in order to run without secrets. Replace environment variables and enable server-side integrations before using in production.
+## 🚀 Features
 
-Quick start
+### Core Platform
+- **Modern UI**: React 18 + TypeScript + Tailwind CSS
+- **Animations**: Framer Motion for smooth interactions
+- **State Management**: Zustand for efficient state handling
+- **Forms**: React Hook Form + Zod validation
+- **Charts**: Recharts for data visualization
+- **Components**: Radix UI + shadcn/ui components
 
+### Backend Services
+- **API**: Express.js with comprehensive REST endpoints
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: JWT + OAuth (Google, GitHub)
+- **Security**: Rate limiting, CORS, helmet protection
+- **Logging**: Winston for structured logging
+- **Validation**: Express-validator for input validation
+
+### Hosting Features
+- **VPS Hosting**: Scalable virtual private servers
+- **Domain Management**: Complete domain registration and management
+- **WordPress Hosting**: Optimized WordPress environments
+- **Cloud Hosting**: Enterprise-grade cloud infrastructure
+- **SSL Security**: Free SSL certificates
+- **DDoS Protection**: Advanced security measures
+
+### Admin Panel
+- **User Management**: Complete CRUD operations
+- **Role-Based Access**: USER, ADMIN, SUPER_ADMIN roles
+- **Analytics**: System statistics and monitoring
+- **Support System**: Ticket management and replies
+- **Billing**: Invoice and subscription management
+
+## 🛠 Tech Stack
+
+### Frontend
+- **React**: 18.2.0 with TypeScript
+- **Vite**: 5.4.19 for fast development
+- **Tailwind CSS**: 3.4.0 for styling
+- **Framer Motion**: 10.16.4 for animations
+- **Zustand**: 4.4.7 for state management
+- **React Router**: 6.20.1 for navigation
+- **React Hook Form**: 7.48.2 for forms
+- **Zod**: 3.22.4 for validation
+- **Recharts**: 2.8.0 for charts
+- **Lucide React**: 0.294.0 for icons
+
+### Backend
+- **Node.js**: 18.18.0
+- **Express**: 4.18.2
+- **Prisma**: 7.2.0 ORM
+- **PostgreSQL**: 15+ database
+- **JWT**: jsonwebtoken for authentication
+- **bcryptjs**: 2.4.3 for password hashing
+- **Winston**: 3.11.0 for logging
+- **Express-validator**: 7.0.1 for validation
+
+### Deployment
+- **Docker**: Multi-service containerization
+- **Nginx**: Reverse proxy with security
+- **GitHub Actions**: CI/CD pipeline ready
+- **Environment**: Production-ready configuration
+
+## 📁 Project Structure
+
+```
+khyathiSriFinal/
+├── src/                          # Frontend source code
+│   ├── components/               # Reusable UI components
+│   │   ├── animations/          # Animation components
+│   │   ├── auth/               # Authentication components
+│   │   ├── cart/               # Shopping cart components
+│   │   └── ui/                 # Base UI components
+│   ├── pages/                    # Page components
+│   ├── stores/                   # Zustand stores
+│   ├── hooks/                    # Custom React hooks
+│   ├── services/                 # API service functions
+│   ├── types/                    # TypeScript type definitions
+│   └── utils/                    # Utility functions
+├── server/                       # Backend source code
+│   ├── middleware/                # Express middleware
+│   ├── routes/                   # API route handlers
+│   ├── utils/                    # Server utilities
+│   └── index.ts                  # Server entry point
+├── prisma/                       # Database schema and migrations
+├── public/                       # Static assets
+├── docker-compose.yml             # Docker services
+├── Dockerfile                    # Container configuration
+└── nginx.conf                    # Nginx configuration
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 15+
+- Docker & Docker Compose (optional)
+
+### Installation
+
+1. **Clone the repository**
 ```bash
-# 1. Install dependencies
+git clone https://github.com/happies2012-cpu/khyathrisri_Finak.git
+cd khyathrisri_Finak
+```
+
+2. **Install dependencies**
+```bash
+# Frontend dependencies
 npm install
 
-# 2. Start the dev server
+# Backend dependencies
+cd server && npm install
+```
+
+3. **Environment setup**
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit with your configuration
+# Database URL, JWT secrets, OAuth keys, etc.
+```
+
+4. **Database setup**
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma db push
+```
+
+5. **Start development servers**
+```bash
+# Start frontend (port 5173)
 npm run dev
 
-# 3. Build for production
-npm run build
+# Start backend (port 3001) - in separate terminal
+npm run server:dev
 ```
 
-Recommended workflow
-
-- Edit code in `src/` and run `npm run dev`.
-- Replace mock providers in `src/services/paymentProviders` and `src/services/ai` with real provider SDKs and add server-side webhooks for secure verification.
-- Use the `supabase/` directory for reference serverless functions and database migrations; adapt to your preferred backend.
-
-How to push to GitHub from your machine
+### Docker Deployment
 
 ```bash
-git add .
-git commit -m "Apply KSF branding and initial scaffolding"
-git push origin main
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
 ```
 
-If you prefer, I can prepare the commit locally and show the exact `git` commands to run next.
+## 📊 Available Scripts
 
-Notes and next steps
+### Frontend
+- `npm run dev` - Start development server
+- `npm run dev:https` - Start with HTTPS
+- `npm run dev:insecure` - Start without host checks
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests
 
-- Google OAuth: scaffolded placeholders exist; you'll need client IDs for production and a server-side callback for secure sessions. For local/demo testing you can enable mock OAuth by creating a `.env` file with:
+### Backend
+- `npm run server:dev` - Start development server
+- `npm run server` - Start production server
+- `npm run test` - Run backend tests
 
-```env
-VITE_AUTH_MOCK=true
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/hosting_platform"
+
+# JWT
+JWT_SECRET="your-super-secret-jwt-key"
+JWT_EXPIRES_IN="7d"
+
+# OAuth (Google, GitHub)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Application
+APP_URL="http://localhost:5173"
+API_URL="http://localhost:3001"
+
+# Email (SMTP)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-app-password"
+
+# Payment (Stripe)
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_SECRET_KEY="sk_test_..."
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS="900000"
+RATE_LIMIT_MAX_REQUESTS="100"
 ```
 
-When `VITE_AUTH_MOCK` is set, the "Continue with Google" (and other social) buttons will create a demo user locally so you can test flows without external credentials.
+## 🌐 API Endpoints
 
-- Chatbot: UI scaffold added; current integration uses a mock ChatGPT adapter. Replace with your OpenAI API key or a hosted inference endpoint.
-- Payments: mock provider enabled by default. For real gateways (Stripe, Razorpay, PayU), add server-side endpoints and webhooks.
-- Production hardening: environment secret management, database migrations, monitoring, and CI/CD pipeline are required before public deployment.
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - Get user profile
+- `PUT /api/auth/profile` - Update profile
+- `POST /api/auth/logout` - User logout
 
-If you want, I will:
+### Users (Admin)
+- `GET /api/users` - List all users
+- `GET /api/users/:id` - Get user by ID
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user
+- `GET /api/users/stats` - User statistics
 
-- Commit and show `git push` steps (I cannot push on your behalf without credentials).
-- Start the Google OAuth and ChatGPT integration scaffolding next.
-- Create the role-based admin and hosting provisioning plan and initial server scaffolding.
+### Hosting
+- `GET /api/hosting` - Get user hosting accounts
+- `POST /api/hosting` - Create hosting account
+- `PUT /api/hosting/:id` - Update hosting account
+- `DELETE /api/hosting/:id` - Delete hosting account
+- `GET /api/hosting/stats` - Hosting statistics
 
-Tell me which of the next items you want prioritized.
+### Domains
+- `GET /api/domains` - Get user domains
+- `POST /api/domains` - Register domain
+- `PUT /api/domains/:id` - Update domain
+- `DELETE /api/domains/:id` - Delete domain
+- `POST /api/domains/:id/transfer` - Transfer domain
+
+### Orders & Billing
+- `GET /api/orders` - Get user orders
+- `POST /api/orders` - Create order
+- `PUT /api/orders/:id/status` - Update order status
+- `GET /api/billing/invoices` - Get invoices
+- `GET /api/billing/subscriptions` - Get subscriptions
+
+### Support
+- `GET /api/support` - Get support tickets
+- `POST /api/support` - Create support ticket
+- `POST /api/support/:id/reply` - Reply to ticket
+- `PUT /api/support/:id` - Update ticket status
+
+### Admin
+- `GET /api/admin/stats` - System statistics
+- `GET /api/admin/users` - Manage users
+- `GET /api/admin/support` - Manage support tickets
+- `PUT /api/admin/settings` - Update system settings
+
+## 🔐 Security Features
+
+- **JWT Authentication**: Secure token-based auth
+- **Rate Limiting**: Prevent abuse and DDoS
+- **CORS Protection**: Cross-origin resource sharing
+- **Input Validation**: Comprehensive input sanitization
+- **Password Hashing**: bcrypt for secure password storage
+- **Security Headers**: Helmet.js for HTTP security
+- **SQL Injection Prevention**: Prisma ORM protection
+- **XSS Protection**: Content Security Policy headers
+
+## 📱 Browser Compatibility
+
+### Supported Browsers
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Mobile browsers (iOS Safari, Chrome Mobile)
+
+### Development Setup
+For cross-platform development compatibility:
+
+1. **Chrome**: Enable `chrome://flags/#allow-insecure-localhost`
+2. **Firefox**: Set `security.fileuri.strict_origin_policy` to false
+3. **Safari**: Enable Develop menu in Preferences
+4. **Edge**: Use `--disable-web-security` flag
+
+See `BROWSER_COMPATIBILITY.md` for detailed setup instructions.
+
+## 🚀 Deployment
+
+### Production Deployment
+
+1. **Environment Setup**
+```bash
+# Set production environment variables
+export NODE_ENV=production
+export DATABASE_URL="postgresql://..."
+export JWT_SECRET="production-secret"
+```
+
+2. **Database Migration**
+```bash
+npx prisma db push
+npx prisma generate
+```
+
+3. **Build Application**
+```bash
+# Build frontend
+npm run build
+
+# Build backend
+cd server && npm run build
+```
+
+4. **Docker Deployment**
+```bash
+# Build and start containers
+docker-compose up -d --build
+
+# Scale services if needed
+docker-compose up -d --scale frontend=2
+```
+
+### Cloud Deployment
+
+The application is ready for deployment to:
+- **AWS**: ECS, EKS, or EC2 with Docker
+- **Google Cloud**: Cloud Run or GKE
+- **Azure**: Container Instances or AKS
+- **DigitalOcean**: App Platform or Droplets
+- **Heroku**: Container stack
+
+## 🧪 Testing
+
+### Frontend Tests
+```bash
+# Run all tests
+npm run test
+
+# Run with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+```
+
+### Backend Tests
+```bash
+cd server
+
+# Run API tests
+npm run test
+
+# Run integration tests
+npm run test:integration
+```
+
+## 📈 Performance
+
+### Frontend Optimization
+- **Code Splitting**: Dynamic imports for reduced bundle size
+- **Tree Shaking**: Unused code elimination
+- **Image Optimization**: WebP format support
+- **Caching**: Service worker for offline support
+- **Lazy Loading**: Component and route lazy loading
+
+### Backend Performance
+- **Database Indexing**: Optimized query performance
+- **Connection Pooling**: Efficient database connections
+- **Caching**: Redis for session and data caching
+- **Compression**: Gzip response compression
+- **Rate Limiting**: API protection and performance
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+For support and questions:
+- Create an issue in the GitHub repository
+- Check the documentation in the `/docs` folder
+- Review the FAQ in the repository wiki
+
+---
+
+**Built with ❤️ by KSFOUNDATION Team**

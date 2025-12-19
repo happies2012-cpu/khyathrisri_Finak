@@ -9,14 +9,14 @@ import { AnimatedPage } from '@/components/animations/AnimatedPage';
 const LandingPage: React.FC = () => {
   return (
     <AnimatedPage>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         {/* Navigation */}
         <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-lg border-b border-white/10">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg"></div>
-                <span className="text-white font-bold text-xl">Rocket Launchpad</span>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg"></div>
+                <span className="text-white font-bold text-xl">KSFOUNDATION</span>
               </div>
               <div className="hidden md:flex items-center space-x-8">
                 <a href="#features" className="text-white/80 hover:text-white transition-colors">Features</a>
@@ -28,7 +28,7 @@ const LandingPage: React.FC = () => {
                   </Button>
                 </Link>
                 <Link to="/auth">
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+                  <Button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600">
                     Get Started
                   </Button>
                 </Link>
@@ -50,8 +50,8 @@ const LandingPage: React.FC = () => {
                     transition={{ duration: 0.8 }}
                   >
                     Launch Your
-                    <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      Digital Empire
+                    <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                      Digital Foundation
                     </span>
                   </motion.h1>
                 </StaggerItem>
@@ -74,7 +74,7 @@ const LandingPage: React.FC = () => {
                     transition={{ duration: 0.8, delay: 0.4 }}
                   >
                     <Link to="/vps">
-                      <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3">
+                      <Button size="lg" className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-3">
                         Start Free Trial
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
@@ -95,7 +95,7 @@ const LandingPage: React.FC = () => {
               transition={{ duration: 1, delay: 0.6 }}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl blur-3xl"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl blur-3xl"></div>
                 <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl border border-white/10 p-8">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {[
@@ -109,7 +109,7 @@ const LandingPage: React.FC = () => {
                         whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.1)' }}
                         transition={{ duration: 0.3 }}
                       >
-                        <item.icon className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                        <item.icon className="w-12 h-12 mx-auto mb-4 text-blue-400" />
                         <h3 className="text-white font-semibold mb-2">{item.label}</h3>
                         <p className="text-white/60 text-sm">{item.desc}</p>
                       </motion.div>
@@ -128,7 +128,7 @@ const LandingPage: React.FC = () => {
               <div className="text-center mb-16">
                 <h2 className="text-4xl font-bold text-white mb-4">
                   Everything You Need to
-                  <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                     Succeed Online
                   </span>
                 </h2>
@@ -156,7 +156,7 @@ const LandingPage: React.FC = () => {
                   icon: Users,
                   title: 'Expert Support',
                   description: '24/7 technical support from hosting experts who actually care.',
-                  gradient: 'from-purple-400 to-pink-500'
+                  gradient: 'from-blue-400 to-cyan-500'
                 },
                 {
                   icon: Globe,
@@ -168,13 +168,13 @@ const LandingPage: React.FC = () => {
                   icon: Server,
                   title: 'Scalable Infrastructure',
                   description: 'Scale from a small blog to enterprise applications seamlessly.',
-                  gradient: 'from-red-400 to-pink-500'
+                  gradient: 'from-blue-400 to-cyan-500'
                 },
                 {
                   icon: HeadphonesIcon,
                   title: 'Managed Services',
-                  description: 'Let our experts handle the technical details while you focus on growth.',
-                  gradient: 'from-indigo-400 to-purple-500'
+                  description: 'Let our experts handle technical details while you focus on growth.',
+                  gradient: 'from-blue-400 to-cyan-500'
                 },
               ].map((feature, index) => (
                 <StaggerItem key={index}>
@@ -201,7 +201,7 @@ const LandingPage: React.FC = () => {
               <div className="text-center mb-16">
                 <h2 className="text-4xl font-bold text-white mb-4">
                   Simple, Transparent
-                  <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                     Pricing
                   </span>
                 </h2>
@@ -226,7 +226,7 @@ const LandingPage: React.FC = () => {
                   price: '$29.99',
                   period: '/month',
                   features: ['5 Websites', '50GB Storage', '500GB Bandwidth', 'Free SSL', 'Priority Support', 'Daily Backups'],
-                  gradient: 'from-purple-500 to-pink-500',
+                  gradient: 'from-blue-500 to-cyan-500',
                   popular: true
                 },
                 {
@@ -234,7 +234,7 @@ const LandingPage: React.FC = () => {
                   price: '$99.99',
                   period: '/month',
                   features: ['Unlimited Websites', '200GB Storage', '2TB Bandwidth', 'Free SSL', '24/7 Phone Support', 'Daily Backups', 'Dedicated IP'],
-                  gradient: 'from-orange-500 to-red-500',
+                  gradient: 'from-blue-500 to-cyan-500',
                   popular: false
                 },
               ].map((plan, index) => (
@@ -247,12 +247,12 @@ const LandingPage: React.FC = () => {
                 >
                   {plan.popular && (
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                      <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
                         Most Popular
                       </span>
                     </div>
                   )}
-                  <div className={`bg-black/40 backdrop-blur-xl rounded-2xl border ${plan.popular ? 'border-purple-500/50' : 'border-white/10'} p-8 h-full`}>
+                  <div className={`bg-black/40 backdrop-blur-xl rounded-2xl border ${plan.popular ? 'border-blue-500/50' : 'border-white/10'} p-8 h-full`}>
                     <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                     <div className="mb-6">
                       <span className="text-4xl font-bold text-white">{plan.price}</span>
@@ -282,7 +282,7 @@ const LandingPage: React.FC = () => {
         <section className="py-20 px-4">
           <div className="container mx-auto">
             <motion.div
-              className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-3xl p-12 text-center border border-white/10"
+              className="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-3xl p-12 text-center border border-white/10"
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8 }}
@@ -290,15 +290,15 @@ const LandingPage: React.FC = () => {
             >
               <h2 className="text-4xl font-bold text-white mb-4">
                 Ready to Launch Your
-                <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   Next Project?
                 </span>
               </h2>
               <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                Join thousands of developers and businesses who trust Rocket Launchpad for their hosting needs.
+                Join thousands of developers and businesses who trust KSFOUNDATION for their hosting needs.
               </p>
               <Link to="/auth">
-                <Button size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4">
+                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-8 py-4">
                   Start Your Free Trial
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -313,11 +313,11 @@ const LandingPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
               <div>
                 <div className="flex items-center space-x-2 mb-4">
-                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg"></div>
-                  <span className="text-white font-bold text-xl">Rocket Launchpad</span>
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg"></div>
+                  <span className="text-white font-bold text-xl">KSFOUNDATION</span>
                 </div>
                 <p className="text-white/60">
-                  Professional hosting services for the modern web.
+                  Professional hosting services for modern web.
                 </p>
               </div>
               <div>
@@ -349,7 +349,7 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
             <div className="border-t border-white/10 pt-8 text-center text-white/60">
-              <p>&copy; 2024 Rocket Launchpad. All rights reserved.</p>
+              <p>&copy; 2024 KSFOUNDATION. All rights reserved.</p>
             </div>
           </div>
         </footer>
