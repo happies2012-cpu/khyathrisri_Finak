@@ -3,87 +3,170 @@ import { supabase } from '@/integrations/supabase/client';
 export interface HostingAccount {
   id: string;
   user_id: string;
-  service_type: string;
-  plan_name: string;
+  provider: string;
+  plan: string;
   status: string;
-  account_username?: string;
-  account_password?: string;
-  control_panel_url?: string;
-  nameservers?: string[];
-  created_at?: string;
-  activated_at?: string;
-  expires_at?: string;
+  metadata: any;
+  created_at: string;
+  updated_at: string;
 }
 
-export async function createOrder(userId: string, items: any[], totals: { subtotal: number; discount: number; total: number }) {
-  try {
-    const { data, error } = await supabase.from('orders').insert({
-      user_id: userId,
-      status: 'pending',
-      subtotal: totals.subtotal,
-      discount: totals.discount,
-      tax: 0,
-      total: totals.total,
-      items,
-    }).select().limit(1);
+export async function createHostingAccount(userId: string, serviceId: string, config: any = {}) {
+  // Get service details (mock for now)
+  const service = {
+    id: serviceId,
+    name: 'VPS Hosting',
+    type: 'hosting',
+    base_price: 19.99
+  };
 
-    if (error) throw error;
-    return data && data[0];
-  } catch (e) {
-    console.warn('createOrder fallback - returning local object', e);
-    return { id: `local_${Date.now()}`, user_id: userId, items, total: totals.total };
-  }
+  // Simulate server allocation
+  const allocatedServer = await allocateServer(config);
+
+  // Create hosting account
+  const { data, error } = await supabase
+    .from('hosting_accounts')
+    .insert({
+      owner_id: userId,
+      name: `${service.name} - ${userId.slice(-4)}`,
+      plan: 'starter', // map from service
+      server_location: config.location || 'us-east',
+      storage_used_gb: 0,
+      bandwidth_used_gb: 0,
+      is_active: false, // will be activated after provisioning
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  // Trigger provisioning
+  await startProvisioning(data.id, allocatedServer, config);
+
+  return data;
 }
 
-export async function createHostingAccount(userId: string, serviceType: string, planName: string, billingCycle: 'monthly' | 'annual' = 'monthly') {
-  try {
-    const username = `u_${Math.random().toString(36).slice(2, 9)}`;
-    const password = Math.random().toString(36).slice(2, 10);
-    const expiresAt = new Date();
-    if (billingCycle === 'monthly') expiresAt.setMonth(expiresAt.getMonth() + 1);
-    else expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+async function allocateServer(config: any) {
+  // Mock server allocation - in production, query available servers
+  const availableServers = [
+    { id: 'server-001', location: 'us-east', capacity: { cpu: 8, ram: 16, storage: 500 } },
+    { id: 'server-002', location: 'eu-west', capacity: { cpu: 12, ram: 24, storage: 1000 } },
+    { id: 'server-003', location: 'ap-south', capacity: { cpu: 6, ram: 12, storage: 250 } },
+  ];
 
-    const { data, error } = await supabase.from('hosting_accounts').insert({
-      user_id: userId,
-      service_type: serviceType,
-      plan_name: planName,
-      status: 'active',
-      account_username: username,
-      account_password: password,
-      control_panel_url: `https://${username}.hosting.local/`,
-      nameservers: ['ns1.ks-foundation.test', 'ns2.ks-foundation.test'],
-      activated_at: new Date().toISOString(),
-      expires_at: expiresAt.toISOString(),
-      billing_cycle: billingCycle,
-      auto_renew: true,
-    }).select().limit(1);
+  // Find server that can accommodate the request
+  const suitableServer = availableServers.find(server =>
+    server.location === config.location &&
+    server.capacity.cpu >= (config.cpu || 1) &&
+    server.capacity.ram >= (config.ram || 1) &&
+    server.capacity.storage >= (config.storage || 25)
+  );
 
-    if (error) throw error;
-    return data && data[0];
-  } catch (e) {
-    console.warn('createHostingAccount fallback - returning local object', e);
-    return {
-      id: `local_host_${Date.now()}`,
-      user_id: userId,
-      service_type: serviceType,
-      plan_name: planName,
-      status: 'active',
-      account_username: `u_${Math.random().toString(36).slice(2,8)}`,
-      control_panel_url: 'https://local-hosting/',
-    } as HostingAccount;
+  if (!suitableServer) {
+    throw new Error('No suitable server available for the requested configuration');
   }
+
+  return suitableServer;
 }
 
-export async function getUserHosting(userId: string) {
-  try {
-    const { data, error } = await supabase.from('hosting_accounts').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-    if (error) {
-      console.warn('getUserHosting error (table may not exist yet):', error);
-      return [] as HostingAccount[];
-    }
-    return data || [];
-  } catch (e) {
-    console.warn('getUserHosting fallback', e);
-    return [] as HostingAccount[];
+async function startProvisioning(accountId: string, server: any, config: any) {
+  // Mock provisioning process
+  console.log(`Starting provisioning for account ${accountId} on server ${server.id}`);
+
+  // Step 1: Allocate resources
+  await updateProvisioningStatus(accountId, 'Allocating resources...');
+
+  // Step 2: Setup container/VM
+  setTimeout(async () => {
+    await updateProvisioningStatus(accountId, 'Setting up virtual machine...');
+
+    // Step 3: Configure services
+    setTimeout(async () => {
+      await updateProvisioningStatus(accountId, 'Configuring services...');
+
+      // Step 4: Finalize
+      setTimeout(async () => {
+        await completeProvisioning(accountId, server, config);
+      }, 3000);
+    }, 3000);
+  }, 2000);
+}
+
+async function updateProvisioningStatus(accountId: string, status: string) {
+  // In production, update a provisioning log or status field
+  console.log(`Provisioning ${accountId}: ${status}`);
+}
+
+async function completeProvisioning(accountId: string, server: any, config: any) {
+  // Update account to active
+  const { error } = await supabase
+    .from('hosting_accounts')
+    .update({
+      is_active: true,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', accountId);
+
+  if (error) {
+    console.error('Failed to complete provisioning:', error);
+    return;
   }
+
+  // Update server allocation
+  await updateServerAllocation(server.id, config);
+
+  console.log(`Provisioning completed for account ${accountId}`);
+}
+
+async function updateServerAllocation(serverId: string, config: any) {
+  // In production, update server capacity tracking
+  console.log(`Updated allocation for server ${serverId}:`, config);
+}
+
+export async function getHostingAccounts(userId: string) {
+  const { data, error } = await supabase
+    .from('hosting_accounts')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return data || [];
+}
+
+export async function updateHostingAccountStatus(accountId: string, status: string) {
+  const { data, error } = await supabase
+    .from('hosting_accounts')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', accountId)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
+export async function suspendHostingAccount(accountId: string) {
+  return updateHostingAccountStatus(accountId, 'suspended');
+}
+
+export async function activateHostingAccount(accountId: string) {
+  return updateHostingAccountStatus(accountId, 'active');
+}
+
+export async function terminateHostingAccount(accountId: string) {
+  return updateHostingAccountStatus(accountId, 'terminated');
+}
+
+export async function getServerStats() {
+  // Mock server stats
+  return {
+    uptime: 99.9,
+    cpu: 45,
+    memory: 60,
+    disk: 30,
+    bandwidth: 70
+  };
 }

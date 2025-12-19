@@ -27,6 +27,7 @@ import Privacy from '@/pages/Privacy';
 import Admin from '@/pages/Admin';
 import Orders from '@/pages/Orders';
 import Invoices from '@/pages/Invoices';
+import HostingControlPanel from '@/pages/HostingControlPanel';
 import RequireRole from '@/components/auth/RequireRole';
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/dashboard/hosting/new" element={<ProtectedRoute><HostingAccounts /></ProtectedRoute>} />
             <Route path="/dashboard/domains" element={<ProtectedRoute><DashboardDomains /></ProtectedRoute>} />
             <Route path="/dashboard/support" element={<ProtectedRoute><Support /></ProtectedRoute>} />
+            <Route path="/hosting/control-panel/:accountId" element={<ProtectedRoute><HostingControlPanel /></ProtectedRoute>} />
             <Route path="/dashboard/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />

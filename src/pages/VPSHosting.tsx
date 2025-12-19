@@ -4,6 +4,7 @@ import { Check, Server, Cpu, HardDrive, Wifi, Shield, Zap, ArrowRight, Plus, Min
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import LiveChat from '@/components/home/LiveChat';
+import ServiceConfigurator from '@/components/ServiceConfigurator';
 
 const vpsPlans = [
   {
@@ -66,22 +67,6 @@ const vpsPlans = [
 
 const VPSHosting = () => {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
-  
-  // Configuration Builder State
-  const [config, setConfig] = useState({
-    cpu: 2,
-    ram: 4,
-    storage: 80,
-    bandwidth: 4,
-  });
-
-  const calculatePrice = () => {
-    const cpuPrice = config.cpu * 2.5;
-    const ramPrice = config.ram * 1.5;
-    const storagePrice = config.storage * 0.05;
-    const bandwidthPrice = config.bandwidth * 0.5;
-    return (cpuPrice + ramPrice + storagePrice + bandwidthPrice).toFixed(2);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -238,162 +223,8 @@ const VPSHosting = () => {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto glass-card rounded-2xl p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* CPU Configuration */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Cpu className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="font-semibold">vCPU Cores</span>
-                  </div>
-                  <span className="text-2xl font-bold text-primary">{config.cpu}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, cpu: Math.max(1, c.cpu - 1) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <input
-                    type="range"
-                    min="1"
-                    max="16"
-                    value={config.cpu}
-                    onChange={(e) => setConfig(c => ({ ...c, cpu: parseInt(e.target.value) }))}
-                    className="flex-1 h-2 bg-muted rounded-full appearance-none cursor-pointer accent-primary"
-                  />
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, cpu: Math.min(16, c.cpu + 1) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* RAM Configuration */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-secondary/10">
-                      <Server className="h-5 w-5 text-secondary" />
-                    </div>
-                    <span className="font-semibold">RAM (GB)</span>
-                  </div>
-                  <span className="text-2xl font-bold text-secondary">{config.ram}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, ram: Math.max(1, c.ram - 1) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <input
-                    type="range"
-                    min="1"
-                    max="64"
-                    value={config.ram}
-                    onChange={(e) => setConfig(c => ({ ...c, ram: parseInt(e.target.value) }))}
-                    className="flex-1 h-2 bg-muted rounded-full appearance-none cursor-pointer accent-secondary"
-                  />
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, ram: Math.min(64, c.ram + 1) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Storage Configuration */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-success/10">
-                      <HardDrive className="h-5 w-5 text-success" />
-                    </div>
-                    <span className="font-semibold">NVMe SSD (GB)</span>
-                  </div>
-                  <span className="text-2xl font-bold text-success">{config.storage}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, storage: Math.max(20, c.storage - 20) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <input
-                    type="range"
-                    min="20"
-                    max="1000"
-                    step="20"
-                    value={config.storage}
-                    onChange={(e) => setConfig(c => ({ ...c, storage: parseInt(e.target.value) }))}
-                    className="flex-1 h-2 bg-muted rounded-full appearance-none cursor-pointer accent-success"
-                  />
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, storage: Math.min(1000, c.storage + 20) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Bandwidth Configuration */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-accent/10">
-                      <Wifi className="h-5 w-5 text-accent" />
-                    </div>
-                    <span className="font-semibold">Bandwidth (TB)</span>
-                  </div>
-                  <span className="text-2xl font-bold text-accent">{config.bandwidth}</span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, bandwidth: Math.max(1, c.bandwidth - 1) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <input
-                    type="range"
-                    min="1"
-                    max="32"
-                    value={config.bandwidth}
-                    onChange={(e) => setConfig(c => ({ ...c, bandwidth: parseInt(e.target.value) }))}
-                    className="flex-1 h-2 bg-muted rounded-full appearance-none cursor-pointer accent-accent"
-                  />
-                  <button
-                    onClick={() => setConfig(c => ({ ...c, bandwidth: Math.min(32, c.bandwidth + 1) }))}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Price Summary */}
-            <div className="mt-8 pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-center md:text-left">
-                <p className="text-sm text-muted-foreground">Estimated Monthly Price</p>
-                <p className="text-4xl font-black gradient-text-orange">${calculatePrice()}/mo</p>
-              </div>
-              <Button variant="rocket" size="xl">
-                <Shield className="h-5 w-5" />
-                Deploy Custom VPS
-                <ArrowRight className="h-5 w-5" />
-              </Button>
-            </div>
+          <div className="max-w-2xl mx-auto">
+            <ServiceConfigurator serviceType="vps" basePrice={9.99} />
           </div>
         </div>
       </section>

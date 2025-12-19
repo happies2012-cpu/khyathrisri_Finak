@@ -12,25 +12,51 @@ export interface CartItem {
 }
 
 export async function addToCart(userId: string, serviceId: string, config: Record<string, any> = {}, addons: string[] = []) {
+  // Get service pricing from database
+  const { data: service } = await supabase
+    .from('services')
+    .select('base_price, billing_cycle')
+    .eq('id', serviceId)
+    .single();
+
+  if (!service) {
+    throw new Error('Service not found');
+  }
+
+  // Get addon pricing
+  let addonTotal = 0;
+  if (addons.length > 0) {
+    const { data: addonData } = await supabase
+      .from('service_addons')
+      .select('price')
+      .in('id', addons);
+
+    addonTotal = addonData?.reduce((sum, addon) => sum + (addon.price || 0), 0) || 0;
+  }
+
+  const unitPrice = service.base_price + addonTotal;
+  const totalPrice = unitPrice; // For one unit, can be multiplied by quantity later
+
   const payload = {
     user_id: userId,
     service_id: serviceId,
-    configuration: config,
-    addon_ids: addons,
     quantity: 1,
+    configuration: config,
+    selected_addons: addons,
+    billing_cycle: service.billing_cycle,
+    unit_price: unitPrice,
+    total_price: totalPrice,
   };
 
   // Upsert so user only has one line per service
   const { data, error } = await supabase
     .from('cart_items')
-    .upsert(payload, { onConflict: ['user_id', 'service_id'] })
+    .upsert(payload, { onConflict: ['user_id', 'service_id', 'configuration', 'selected_addons', 'domain_name'] })
     .select()
     .limit(1);
 
   if (error) {
-    console.warn('addToCart error (table may not exist yet):', error);
-    // For local/demo environments, return local representation
-    return payload as CartItem;
+    throw new Error(`Failed to add to cart: ${error.message}`);
   }
 
   return (data && data[0]) || payload;
@@ -42,10 +68,22 @@ export async function removeFromCart(userId: string, serviceId: string) {
 }
 
 export async function getCart(userId: string) {
-  const { data, error } = await supabase.from('cart_items').select('*').eq('user_id', userId).order('added_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('cart_items')
+    .select(`
+      *,
+      services:service_id (
+        name,
+        type,
+        base_price,
+        billing_cycle
+      )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
   if (error) {
-    console.warn('getCart error (table may not exist yet):', error);
-    return [] as CartItem[];
+    throw new Error(`Failed to get cart: ${error.message}`);
   }
   return (data || []) as CartItem[];
 }
@@ -83,16 +121,30 @@ export function getServicePricingConfig() {
 
 export async function calculateCartTotal(userId: string, couponCode?: string) {
   const items = await getCart(userId);
-  const config = getServicePricingConfig();
   let subtotal = 0;
+
   for (const item of items) {
-    const price = config[item.service_id]?.price || 0;
-    subtotal += price * (item.quantity || 1);
+    subtotal += (item.total_price || 0) * (item.quantity || 1);
   }
 
-  // Basic coupon handling placeholder
+  // Handle discount codes
   let discount = 0;
-  if (couponCode === 'TEST10') discount = subtotal * 0.1;
+  if (couponCode) {
+    const { data: coupon } = await supabase
+      .from('discount_codes')
+      .select('*')
+      .eq('code', couponCode.toUpperCase())
+      .eq('is_active', true)
+      .single();
+
+    if (coupon && subtotal >= (coupon.minimum_order || 0)) {
+      if (coupon.type === 'percentage') {
+        discount = subtotal * (coupon.value / 100);
+      } else if (coupon.type === 'fixed') {
+        discount = Math.min(coupon.value, subtotal);
+      }
+    }
+  }
 
   const total = Math.max(0, subtotal - discount);
   return { subtotal, discount, total };

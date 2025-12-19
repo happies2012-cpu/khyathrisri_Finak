@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { getCart, removeFromCart, calculateCartTotal } from '@/services/cartService';
+import { getCart, removeFromCart, calculateCartTotal, updateCartQuantity } from '@/services/cartService';
+import { createOrderFromCart } from '@/services/orderService';
 import { detectCountryFromLocale, currencyForCountry, taxRateForCountry, formatCurrency } from '@/services/priceUtils';
 import { createCheckoutSession } from '@/services/paymentService';
 import { ArrowRight, Trash2, ShoppingCart } from 'lucide-react';
@@ -49,21 +50,26 @@ const CartPage: React.FC = () => {
     }
   };
 
+  const handleQuantityChange = async (serviceId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    try {
+      await updateCartQuantity(user!.id, serviceId, newQuantity);
+      await loadCart();
+    } catch (e) {
+      toast.error('Failed to update quantity');
+    }
+  };
+
   const handleCheckout = async () => {
     if (!user) return toast.error('Login required');
     if (items.length === 0) return toast.error('Cart is empty');
     setLoading(true);
     try {
-      const session = await createCheckoutSession(user!.id, 'starter');
-      if (session.data?.url) {
-        window.location.href = session.data.url;
-      } else {
-        // Fallback: show mock success
-        navigate('/');
-        toast.success('Checkout complete (mock)');
-      }
+      const order = await createOrderFromCart(user!.id, coupon);
+      toast.success('Order created successfully!');
+      navigate('/orders');
     } catch (e) {
-      toast.error('Checkout failed');
+      toast.error('Order creation failed');
     } finally {
       setLoading(false);
     }
@@ -102,12 +108,21 @@ const CartPage: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {items.map((item: any) => (
-                <div key={item.service_id} className="flex items-center justify-between p-4 border rounded">
+                <div key={item.id} className="flex items-center justify-between p-4 border rounded">
                   <div>
-                    <p className="font-semibold">{item.service_id}</p>
-                    <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                    <p className="font-semibold">{item.services?.name || item.service_id}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.services?.type} • {item.billing_cycle}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Button variant="outline" size="sm" onClick={() => handleQuantityChange(item.service_id, item.quantity - 1)} disabled={item.quantity <= 1}>-</Button>
+                      <span className="text-sm">Qty: {item.quantity}</span>
+                      <Button variant="outline" size="sm" onClick={() => handleQuantityChange(item.service_id, item.quantity + 1)}>+</Button>
+                    </div>
+                    <p className="text-sm font-medium">${item.unit_price}/{item.billing_cycle}</p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <span className="font-semibold">${item.total_price}</span>
                     <Button variant="ghost" onClick={() => handleRemove(item.service_id)}>
                       <Trash2 className="w-4 h-4 text-red-500" />
                     </Button>
